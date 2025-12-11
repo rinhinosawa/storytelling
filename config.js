@@ -1,10 +1,10 @@
 var config = {
-    // style: 'mapbox://styles/mapbox/streets-v12',
+    style: 'mapbox://styles/asperitas/cmj1k5syz009901snebplhtas',
     // leave commented to use Mapbox Standard Style
-    accessToken: 'YOUR_MAPBOX_ACCESS_TOKEN',
+    accessToken: 'pk.eyJ1IjoiYXNwZXJpdGFzIiwiYSI6ImNtajE2OG5oejBneWwzZ3BuemNibXBwZWsifQ.qMIF0P32ZMicg_s1440WrQ',
     showMarkers: true,
     markerColor: '#3FB1CE',
-    //projection: 'equirectangular',
+    projection: 'mercator',
     //Read more about available projections here
     //https://docs.mapbox.com/mapbox-gl-js/example/projections/
     inset: true,
@@ -12,13 +12,21 @@ var config = {
         markerColor: 'orange'
     },
     insetPosition: 'bottom-right',
-    theme: 'dark',
+    theme: 'light',
     use3dTerrain: false, //set true for enabling 3D maps.
     auto: false,
-    title: 'Your Title Goes Here',
-    subtitle: 'The Storytelling Template helps you create an awesome animated map story with ease.',
-    byline: 'By a I.M. Amapper',
+    title: 'Unpacking the Housing + Transportation Affordability Index in Los Angeles',
+    subtitle: 'Intuition for Urban Policy',
+    byline: 'By Rin Hinosawa',
     footer: 'Source: source citations, etc. <br> Created using <a href="https://github.com/mapbox/storytelling" target="_blank">Mapbox Storytelling</a> template.',
+    data: {
+        geojson: './assets/blockgroups.geojson',   // converted shapefile -> GeoJSON
+        csv: './assets/htaindex2022_data_tracts_06.csv',           // ACS CSV
+        csvGeoidField: 'tract',                    // field name in both geojson and CSV
+        geoidField: 'GEOID',                       // field name in both geojson and CSV
+        valueFields: ['ht_ami'],     // fields available to visualize
+        defaultField: 'ht_ami'              // initial choropleth variable
+    },
     chapters: [
         {
             id: 'slug-style-id',
