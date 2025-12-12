@@ -1,43 +1,45 @@
 var config = {
     style: 'mapbox://styles/asperitas/cmj1k5syz009901snebplhtas',
+    overlayStyle: 'mapbox://styles/asperitas/cmj1k4dvf009801snbxyx6l79', // Overlay style to add on top
+    satelliteStyle: 'mapbox://styles/mapbox/satellite-v9', // Satellite style for terrain view
     // leave commented to use Mapbox Standard Style
     accessToken: 'pk.eyJ1IjoiYXNwZXJpdGFzIiwiYSI6ImNtajE2OG5oejBneWwzZ3BuemNibXBwZWsifQ.qMIF0P32ZMicg_s1440WrQ',
-    showMarkers: true,
+    showMarkers: false,
     markerColor: '#3FB1CE',
     projection: 'mercator',
     //Read more about available projections here
     //https://docs.mapbox.com/mapbox-gl-js/example/projections/
-    inset: true,
+    inset: false,
     insetOptions: {
         markerColor: 'orange'
     },
     insetPosition: 'bottom-right',
-    theme: 'light',
-    use3dTerrain: false, //set true for enabling 3D maps.
+    theme: 'dark',
+    use3dTerrain: true, //set true for enabling 3D maps.
     auto: false,
-    title: 'Unpacking the Housing + Transportation Affordability Index in Los Angeles',
-    subtitle: 'Intuition for Urban Policy',
+    title: 'Unpacking "Affordability" in Los Angeles',
+    subtitle: 'Building Everyday Intuition for Urban Policy',
     byline: 'By Rin Hinosawa',
     footer: 'Source: source citations, etc. <br> Created using <a href="https://github.com/mapbox/storytelling" target="_blank">Mapbox Storytelling</a> template.',
     data: {
         geojson: './assets/blockgroups.geojson',   // converted shapefile -> GeoJSON
-        csv: './assets/htaindex2022_data_tracts_06.csv',           // ACS CSV
-        csvGeoidField: 'tract',                    // field name in both geojson and CSV
-        geoidField: 'GEOID',                       // field name in both geojson and CSV
-        valueFields: ['ht_ami'],     // fields available to visualize
+        csv: './assets/htaindex2022_data_blkgrps_06.csv',           // ACS CSV
+        csvGeoidField: 'blkgrp',                    // field name in CSV (block group ID)
+        geoidField: 'GEOID',                       // field name in GeoJSON
+        valueFields: ['ht_ami', 'h_ami', 't_ami', 'compact_ndx', 'frac_sfd', 'emp_gravity', 'emp_ovrll_ndx', 'hh_gravity', 'median_gross_rent'],     // fields available to visualize
         defaultField: 'ht_ami'              // initial choropleth variable
     },
     chapters: [
         {
-            id: 'slug-style-id',
-            alignment: 'left',
-            hidden: false,
-            title: 'San Francisco',
-            image: './assets/san-fran.jpeg',
-            description: 'The first chapter contains a title, image, and camera view for San Francisco, California. Update the chapter data to make it your own.',
+            id: 'chapter-1',
+            alignment: 'fully',
+            hidden: true,
+            title: '',
+            image: '',
+            description: '',
             location: {
-                center: [-122.418398, 37.759483],
-                zoom: 8.5,
+                center: [-118.36715, 33.98449],
+                zoom: 8.23,
                 pitch: 60,
                 bearing: 0
             },
@@ -45,81 +47,109 @@ var config = {
             rotateAnimation: false,
             callback: '',
             onChapterEnter: [
-                // {
-                //     layer: 'layer-name',
-                //     opacity: 1,
-                //     duration: 5000
-                // }
+                {
+                     layer: 'census-choropleth',
+                     opacity: 0,                
+                }
             ],
-            onChapterExit: [
-                // {
-                //     layer: 'layer-name',
-                //     opacity: 0
-                // }
-            ]
+            onChapterExit: []
         },
         {
-            id: 'second-identifier',
-            alignment: 'right',
+            id: 'chapter-2',
+            alignment: 'fully',
             hidden: false,
-            title: 'Washington, D.C.',
-            image: './assets/washington-dc.jpg',
-            description: 'The second chapter flies to Washington, D.C., updates the camera pitch, and slowly rotates. <br>  <br> Washington, D.C., the capital of the United States, is a vibrant city known for its iconic landmarks, including the White House, the U.S. Capitol, and the Washington Monument. It serves as the political heart of the nation and a center for history, culture, and international diplomacy.',
+            title: 'What is Affordability?',
+            //image: '',
+            description: 'The Housing and Transportation (H+T) Affordability Index is a mapping tool designed to give a more comprehensive view of affordability based on local costs of housing and transportation. <br>, and slowly rotates. <br>  <br>' ,
             location: {
-                center: [-77.020636, 38.886900],
-                zoom: 8.5,
-                pitch: 60,
-                bearing: -43.2,
+                center: [-118.36715, 33.98449],
+                zoom: 9.23,
+                pitch: 0,
+                bearing: 0,
                 // flyTo additional controls-
                 // These options control the flight curve, making it move
                 // slowly and zoom out almost completely before starting
                 // to pan.
-                //speed: 2, // make the flying slow
-                //curve: 1, // change the speed at which it zooms out
+                speed: 0.1, // make the flying slow
+                curve: 1, // change the speed at which it zooms out
             },
             mapAnimation: 'flyTo',
-            rotateAnimation: true,
-            callback: '',
-            onChapterEnter: [],
+            rotateAnimation: false,
+            callback: 'switchToDefault',
+            onChapterEnter: [
+                {
+                     layer: 'census-choropleth',
+                     field: 'ht_ami',
+                     opacity: 1,
+                     duration: 5000
+                }
+            ],
             onChapterExit: []
         },
         {
-            id: 'third-identifier',
+            id: 'chapter-3',
             alignment: 'left',
             hidden: false,
-            title: 'Geneva',
-            image: './assets/geneva.jpg',
+            title: 'Beverly Hills - Affordable?',
+            image: './assets/ce9601b674170faa40e7a093f99be5b2f82703bb.jpg',
             description: 'Geneva, Switzerland, is a picturesque city nestled along the shores of Lake Geneva, surrounded by the Alps and Jura mountains. Known as a global hub for diplomacy and finance, it is home to numerous international organizations, including the United Nations and the Red Cross.',
             location: {
-                center: [6.15116, 46.20595],
-                zoom: 12.52,
+                center: [-118.41017, 34.06963],
+                zoom: 12.98,
                 pitch: 8.01,
                 bearing: 0.00
             },
             mapAnimation: 'flyTo',
             rotateAnimation: false,
-            callback: '',
-            onChapterEnter: [],
+            callback: 'switchToDefault',
+            onChapterEnter: [
+                {
+                    field: 'ht_ami',
+                }
+            ],
             onChapterExit: []
         },
         {
-            id: 'fourth-chapter',
-            alignment: 'fully',
+            id: 'chapter-4',
+            alignment: 'left',
             hidden: false,
-            title: 'Buenos Aires',
-            image: './assets/buenos-aires.jpg',
-            description: 'Buenos Aires, the capital of Argentina, is a dynamic city known for its European-inspired architecture, vibrant tango culture, and rich culinary scene. Often called the "Paris of South America," it blends historic charm with modern energy.  You can add as many chapters as you need, just copy the JSON data and make changes.',
+            title: 'Beverly Hills - Affordable?',
+            image: './assets/ce9601b674170faa40e7a093f99be5b2f82703bb.jpg',
+            description: 'Geneva, Switzerland, is a picturesque city nestled along the shores of Lake Geneva, surrounded by the Alps and Jura mountains. Known as a global hub for diplomacy and finance, it is home to numerous international organizations, including the United Nations and the Red Cross.',
             location: {
-                center: [-58.54195, -34.71600],
-                zoom: 4,
-                pitch: 0,
-                bearing: 0
+                center: [-118.41017, 34.06963],
+                zoom: 12.98,
+                pitch: 8.01,
+                bearing: 0.00
             },
             mapAnimation: 'flyTo',
             rotateAnimation: false,
-            callback: '',
+            callback: 'switchToDefault',
+            onChapterEnter: [
+                {
+                    field: 'frac_sfd',
+                }
+            ],
+            onChapterExit: []
+        },
+        {
+            id: 'chapter-5',
+            alignment: 'left',
+            hidden: false,
+            title: 'A Closer Look',
+            image: './assets/bevhillszoning.png',
+            description: 'Beverly Hills is a prime example of ',
+            location: {
+                center: [-118.41017, 34.06963],
+                zoom: 12.98,
+                pitch: 8.01,
+                bearing: 0.00
+            },
+            mapAnimation: 'flyTo',
+            rotateAnimation: false,
+            callback: 'switchToSatellite',
             onChapterEnter: [],
             onChapterExit: []
-        }
+        },
     ]
 };

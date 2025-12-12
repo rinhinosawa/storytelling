@@ -46,6 +46,69 @@
             text-align: center;
         }
 
+        #field-display {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(68, 68, 68, 0.95);
+            padding: 12px 16px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            font-family: sans-serif;
+            font-size: 14px;
+            z-index: 1000;
+            min-width: 200px;
+            max-width: 300px;
+        }
+        
+        #field-display .field-label {
+            font-weight: 600;
+            color: #fafafa;
+            margin-bottom: 4px;
+        }
+        
+        #field-display .field-name {
+            color: #fafafa;
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+        
+        #field-display .legend {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(250, 250, 250, 0.2);
+        }
+        
+        #field-display .legend-label {
+            font-size: 11px;
+            color: #fafafa;
+            opacity: 0.8;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        #field-display .legend-gradient {
+            height: 12px;
+            width: 100%;
+            border-radius: 2px;
+            margin-bottom: 6px;
+            background: linear-gradient(to right, #ffffcc, #c7e9b4, #7fcdbb, #41b6c4, #2c7fb8, #253494);
+        }
+        
+        #field-display .legend-values {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #fafafa;
+            opacity: 0.7;
+        }
+        
+        #field-display .legend-value {
+            text-align: center;
+            flex: 1;
+        }
+
         #footer {
             width: 100%;
             min-height: 5vh;
@@ -73,7 +136,7 @@
         }
 
         .lefty {
-            width: 33vw;
+            width: 40vw;
             margin-left: 5vw;
         }
 
@@ -140,6 +203,7 @@
 
     <div id="map"></div>
     <div id="story"></div>
+    <div id="field-display"></div>
 
     <script src="./config.js"></script>
     <script>
@@ -167,15 +231,27 @@
         }
 
         function setLayerOpacity(layer) {
-            var paintProps = getLayerPaintType(layer.layer);
-            paintProps.forEach(function (prop) {
-                var options = {};
+            if (!map.getLayer(layer.layer)) {
+                console.warn('Layer not found:', layer.layer);
+                return;
+            }
+            
+            const paintProps = getLayerPaintType(layer.layer);
+            const options = layer.duration ? { duration: layer.duration } : {};
+            
+            paintProps.forEach(prop => {
                 if (layer.duration) {
-                    var transitionProp = prop + "-transition";
-                    options = { "duration": layer.duration };
-                    map.setPaintProperty(layer.layer, transitionProp, options);
+                    map.setPaintProperty(layer.layer, prop + '-transition', options);
                 }
-                map.setPaintProperty(layer.layer, prop, layer.opacity, options);
+                
+                // For census-choropleth, multiply existing expression; others set directly
+                if (layer.layer === 'census-choropleth' && prop === 'fill-opacity') {
+                    const current = map.getPaintProperty(layer.layer, prop);
+                    const newValue = Array.isArray(current) ? ['*', current, layer.opacity] : layer.opacity;
+                    map.setPaintProperty(layer.layer, prop, newValue, options);
+                } else {
+                    map.setPaintProperty(layer.layer, prop, layer.opacity, options);
+                }
             });
         }
 
@@ -291,6 +367,344 @@
         // instantiate the scrollama
         var scroller = scrollama();
 
+        // Simple CSV parser - handles triple quotes
+        function parseCSV(text) {
+            const lines = text.split('\n').filter(l => l.trim());
+            if (!lines.length) return [];
+            const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+            const data = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = [];
+                let current = '';
+                let inQuotes = false;
+                for (let char of lines[i]) {
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(current.replace(/^"+|"+$/g, '').trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                values.push(current.replace(/^"+|"+$/g, '').trim());
+                const row = {};
+                headers.forEach((h, j) => {
+                    let val = values[j] || '';
+                    const num = parseFloat(val);
+                    row[h] = isNaN(num) ? val : num;
+                });
+                data.push(row);
+            }
+            return data;
+        }
+
+        // Store the loaded GeoJSON data globally so we can update fields
+        let censusGeoJSON = null;
+        let currentField = config.data.defaultField;
+        let currentBreaks = null;
+        
+        // Helper: Create field validation expression
+        function createFieldValidation(fieldName, minVal, maxVal) {
+            return [
+                'all',
+                ['has', fieldName],
+                ['!=', ['get', fieldName], null],
+                ['!=', ['get', fieldName], ''],
+                ['>=', ['to-number', ['get', fieldName]], minVal],
+                ['<=', ['to-number', ['get', fieldName]], maxVal]
+            ];
+        }
+        
+        // Helper: Normalize GEOID to consistent format
+        function normalizeGeoid(id) {
+            return String(id || '').trim().replace(/^"+|"+$/g, '').padStart(12, '0');
+        }
+        
+        // Helper: Calculate color breaks and stops
+        function calculateColorBreaks(fieldName) {
+            if (!censusGeoJSON) return null;
+            
+            const values = censusGeoJSON.features
+                .map(f => parseFloat(f.properties[fieldName]))
+                .filter(v => !isNaN(v))
+                .sort((a, b) => a - b);
+            
+            if (values.length === 0) return null;
+            
+            const quantiles = [0, 0.2, 0.4, 0.6, 0.8, 1];
+            const breaks = quantiles.map(p => 
+                Number(values[Math.min(Math.floor((values.length - 1) * p), values.length - 1)])
+            );
+            
+            const colors = ['#ffffcc', '#c7e9b4', '#7fcdbb', '#41b6c4', '#2c7fb8', '#253494'];
+            const stops = breaks.map((b, i) => [b, colors[i]]).flat();
+            
+            return { breaks, stops, minValue: breaks[0], maxValue: breaks[breaks.length - 1] };
+        }
+        
+        // Helper: Add layer with beforeId if available
+        function addLayerSafely(layerConfig, beforeId) {
+            if (beforeId && map.getLayer(beforeId)) {
+                map.addLayer(layerConfig, beforeId);
+            } else {
+                map.addLayer(layerConfig);
+            }
+        }
+        
+        // Data dictionary mapping field codes to full labels
+        const fieldLabels = {
+            'ht_ami': 'Housing + Transportation Costs as a Percent of Income for a Typical Household',
+            'h_ami': 'Housing Costs as a Percent of Income for a Typical Household',
+            't_ami': 'Transportation Costs as a Percent of Income for a Typical Household',
+            'compact_ndx': 'Compact Neighborhood Score (0-10)',
+            'emp_ovrll_ndx': 'Job Access Score (0-10)',
+            'frac_sfd': 'Percent of Single Family Detached Households',
+            'emp_gravity': 'Employment Access Index',
+            'hh_gravity': 'Regional Household Intensity',
+            'median_gross_rent': 'Median Gross Monthly Rent'
+        };
+        
+        // Update the field display widget with legend
+        function updateFieldDisplay(fieldName, breaks = null) {
+            const displayEl = document.getElementById('field-display');
+            if (!displayEl) return;
+            
+            currentField = fieldName;
+            const label = fieldLabels[fieldName] || fieldName;
+            
+            // Store breaks if provided
+            if (breaks) {
+                currentBreaks = breaks;
+            }
+            
+            // Format numbers for display
+            const formatValue = (val) => {
+                if (val >= 1000) {
+                    return val.toFixed(0);
+                } else if (val >= 1) {
+                    return val.toFixed(1);
+                } else {
+                    return val.toFixed(2);
+                }
+            };
+            
+            let legendHTML = '';
+            if (currentBreaks && currentBreaks.length > 0) {
+                const minVal = formatValue(currentBreaks[0]);
+                const maxVal = formatValue(currentBreaks[currentBreaks.length - 1]);
+                const midVal = formatValue(currentBreaks[Math.floor(currentBreaks.length / 2)]);
+                
+                legendHTML = `
+                    <div class="legend">
+                        <div class="legend-label">Value Range</div>
+                        <div class="legend-gradient"></div>
+                        <div class="legend-values">
+                            <div class="legend-value">${minVal}</div>
+                            <div class="legend-value">${midVal}</div>
+                            <div class="legend-value">${maxVal}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            displayEl.innerHTML = `
+                <div class="field-label">Legend</div>
+                <div class="field-name">${label}</div>
+                ${legendHTML}
+            `;
+        }
+        
+        // Update the visualized field dynamically with smooth transition
+        function updateCensusField(fieldName) {
+            if (!censusGeoJSON || !map.getLayer('census-choropleth')) return;
+            
+            const colorData = calculateColorBreaks(fieldName);
+            if (!colorData) return;
+            
+            updateFieldDisplay(fieldName, colorData.breaks);
+            
+            const validation = createFieldValidation(fieldName, colorData.minValue, colorData.maxValue);
+            const transition = { duration: 4800, delay: 0 };
+            
+            map.setPaintProperty('census-choropleth', 'fill-color-transition', transition);
+            map.setPaintProperty('census-choropleth', 'fill-color', [
+                'case',
+                validation,
+                ['interpolate', ['linear'], ['to-number', ['get', fieldName]], ...colorData.stops],
+                'rgba(255, 255, 255, 0)'
+            ]);
+            map.setPaintProperty('census-choropleth', 'fill-opacity', ['case', validation, 0.7, 0]);
+            
+            if (map.getLayer('census-borders')) {
+                map.setPaintProperty('census-borders', 'line-opacity', ['case', validation, 0.3, 0]);
+            }
+        }
+        
+        // Load and visualize census data
+        async function loadCensusData(beforeId = null) {
+            try {
+                const [csvRes, geoRes] = await Promise.all([
+                    fetch(config.data.csv),
+                    fetch(config.data.geojson)
+                ]);
+                const csvData = parseCSV(await csvRes.text());
+                const geojson = await geoRes.json();
+                
+                // Store globally for field updates
+                censusGeoJSON = geojson;
+                
+                // Create lookup - normalize CSV IDs to match GeoJSON format
+                const lookup = {};
+                csvData.forEach(row => {
+                    const id = normalizeGeoid(row[config.data.csvGeoidField]);
+                    if (id) lookup[id] = row;
+                });
+                
+                // Join data
+                geojson.features.forEach(f => {
+                    const id = normalizeGeoid(f.properties[config.data.geoidField]);
+                    if (lookup[id]) {
+                        Object.assign(f.properties, lookup[id]);
+                        const val = f.properties[config.data.defaultField];
+                        if (!val || isNaN(parseFloat(val))) {
+                            delete f.properties[config.data.defaultField];
+                        }
+                    }
+                });
+                
+                // Calculate color breaks
+                const field = config.data.defaultField;
+                const colorData = calculateColorBreaks(field);
+                if (!colorData) return;
+                
+                const { breaks, stops, minValue, maxValue } = colorData;
+                
+                // Add to map - insert before label layers using beforeId passed from styledata event
+                
+                // Check if census layers already exist
+                const existingCensusLayer = map.getLayer('census-choropleth');
+                const existingSource = map.getSource('census-data');
+                
+                // Only add source if it doesn't exist
+                if (!existingSource) {
+                    map.addSource('census-data', { type: 'geojson', data: geojson });
+                } else {
+                    // Update existing source
+                    existingSource.setData(geojson);
+                }
+                
+                // Remove existing layers if they exist (to re-add with correct positioning)
+                if (existingCensusLayer) map.removeLayer('census-choropleth');
+                if (map.getLayer('census-borders')) map.removeLayer('census-borders');
+                
+                // Create layer configs
+                const validation = createFieldValidation(field, minValue, maxValue);
+                
+                const choroplethLayer = {
+                    id: 'census-choropleth',
+                    type: 'fill',
+                    source: 'census-data',
+                    paint: {
+                        'fill-color': ['case', validation, ['interpolate', ['linear'], ['to-number', ['get', field]], ...stops], 'rgba(255, 255, 255, 0)'],
+                        'fill-opacity': ['case', validation, 0.7, 0]
+                    }
+                };
+                
+                const borderLayer = {
+                    id: 'census-borders',
+                    type: 'line',
+                    source: 'census-data',
+                    paint: {
+                        'line-color': '#ffffff',
+                        'line-width': 0.5,
+                        'line-opacity': ['case', validation, 0.3, 0]
+                    }
+                };
+                
+                addLayerSafely(choroplethLayer, beforeId);
+                addLayerSafely(borderLayer, beforeId);
+                
+                // Set initial opacity to 0 so it can transition in smoothly
+                map.setPaintProperty('census-choropleth', 'fill-opacity', 0);
+                updateFieldDisplay(config.data.defaultField, breaks);
+            } catch (e) {
+                console.error('Error loading census data:', e);
+            }
+        }
+        
+        // Load overlay style and add its layers on top
+        async function loadOverlayStyle() {
+            try {
+                // Convert style URL to API endpoint
+                const styleId = config.overlayStyle.replace('mapbox://styles/', '');
+                const styleUrl = `https://api.mapbox.com/styles/v1/${styleId}?access_token=${config.accessToken}`;
+                
+                const response = await fetch(styleUrl);
+                const overlayStyle = await response.json();
+                
+                if (!overlayStyle.sources || !overlayStyle.layers) {
+                    return;
+                }
+                
+                // Wait for census data to be loaded first
+                const waitForCensusData = () => {
+                    return new Promise((resolve) => {
+                        if (map.getLayer('census-choropleth')) {
+                            resolve();
+                        } else {
+                            const checkInterval = setInterval(() => {
+                                if (map.getLayer('census-choropleth')) {
+                                    clearInterval(checkInterval);
+                                    resolve();
+                                }
+                            }, 100);
+                            // Timeout after 10 seconds
+                            setTimeout(() => {
+                                clearInterval(checkInterval);
+                                resolve();
+                            }, 10000);
+                        }
+                    });
+                };
+                
+                await waitForCensusData();
+                
+                // Add all sources from overlay style
+                for (const [sourceId, source] of Object.entries(overlayStyle.sources)) {
+                    // Prefix source IDs to avoid conflicts
+                    const prefixedSourceId = `overlay-${sourceId}`;
+                    if (!map.getSource(prefixedSourceId)) {
+                        map.addSource(prefixedSourceId, source);
+                    }
+                }
+                
+                // Add all layers from overlay style (they'll be added at the end, on top)
+                for (const layer of overlayStyle.layers) {
+                    // Prefix layer IDs to avoid conflicts
+                    const prefixedLayerId = `overlay-${layer.id}`;
+                    
+                    // Skip if layer already exists
+                    if (map.getLayer(prefixedLayerId)) {
+                        continue;
+                    }
+                    
+                    // Update source references in layer to use prefixed source IDs
+                    const layerCopy = JSON.parse(JSON.stringify(layer));
+                    layerCopy.id = prefixedLayerId;
+                    
+                    if (layerCopy.source) {
+                        layerCopy.source = `overlay-${layerCopy.source}`;
+                    }
+                    
+                    // Add layer at the end (on top of everything)
+                    map.addLayer(layerCopy);
+                }
+            } catch (e) {
+                console.error('Error loading overlay style:', e);
+            }
+        }
+
 
         map.on("load", function () {
             if (config.use3dTerrain) {
@@ -313,6 +727,108 @@
                         'sky-atmosphere-sun-intensity': 15
                     }
                 });
+            }
+
+            // Load and visualize census data
+            // Wait for both map load and style to fully load, then find first symbol layer and insert before it
+            let censusDataLoaded = false; // Make it accessible globally
+            if (config.data && config.data.geojson && config.data.csv) {
+                
+                // Wait for style to load, then find first symbol layer
+                const loadCensusWhenReady = () => {
+                    if (censusDataLoaded) return;
+                    
+                    const layers = map.getStyle().layers;
+                    if (!layers?.length) return false;
+                    
+                    const firstSymbol = layers.find(layer => layer.type === 'symbol');
+                    if (firstSymbol) {
+                        censusDataLoaded = true;
+                        loadCensusData(firstSymbol.id).catch(err => {
+                            console.error('Error in loadCensusData:', err);
+                            censusDataLoaded = false;
+                        });
+                    }
+                    return true;
+                };
+                
+                map.once('styledata', () => {
+                    if (!loadCensusWhenReady()) {
+                        setTimeout(loadCensusWhenReady, 500);
+                    }
+                });
+                
+                setTimeout(() => {
+                    if (!censusDataLoaded) loadCensusWhenReady();
+                }, 2000);
+            }
+            
+            // Load overlay style layers on top of census data
+            if (config.overlayStyle) {
+                loadOverlayStyle();
+            }
+            
+            // Track current style state for bidirectional navigation
+            let currentStyleState = 'default'; // 'default' or 'satellite'
+            
+            // Style toggle functions - accessible via chapter callbacks
+            window.switchToSatellite = function() {
+                if (!config.satelliteStyle) return;
+                window.hideCensusData();
+                map.setStyle(config.satelliteStyle);
+                currentStyleState = 'satellite';
+            };
+            
+            window.switchToDefault = function() {
+                map.setStyle(config.style);
+                currentStyleState = 'default';
+                
+                map.once('styledata', () => {
+                    if (config.overlayStyle) {
+                        loadOverlayStyle();
+                    }
+                    
+                    setTimeout(() => {
+                        if (!map.getLayer('census-choropleth')) {
+                            const layers = map.getStyle().layers;
+                            const firstSymbol = layers.find(layer => layer.type === 'symbol');
+                            if (firstSymbol) {
+                                censusDataLoaded = false;
+                                loadCensusData(firstSymbol.id);
+                            }
+                            } else {
+                                const colorData = calculateColorBreaks(currentField);
+                                if (colorData) {
+                                    const validation = createFieldValidation(currentField, colorData.minValue, colorData.maxValue);
+                                    map.setPaintProperty('census-choropleth', 'fill-opacity', ['case', validation, 0.7, 0]);
+                                    if (map.getLayer('census-borders')) {
+                                        map.setPaintProperty('census-borders', 'line-opacity', ['case', validation, 0.3, 0]);
+                                    }
+                                }
+                            }
+                            document.getElementById('field-display')?.style.setProperty('display', 'block');
+                    }, 1500);
+                });
+            };
+            
+            window.hideCensusData = function() {
+                if (map.getLayer('census-choropleth')) map.setPaintProperty('census-choropleth', 'fill-opacity', 0);
+                if (map.getLayer('census-borders')) map.setPaintProperty('census-borders', 'line-opacity', 0);
+                document.getElementById('field-display')?.style.setProperty('display', 'none');
+            };
+            
+            window.showCensusData = function() {
+                const colorData = calculateColorBreaks(currentField);
+                if (colorData) {
+                    const validation = createFieldValidation(currentField, colorData.minValue, colorData.maxValue);
+                    if (map.getLayer('census-choropleth')) {
+                        map.setPaintProperty('census-choropleth', 'fill-opacity', ['case', validation, 0.7, 0]);
+                    }
+                    if (map.getLayer('census-borders')) {
+                        map.setPaintProperty('census-borders', 'line-opacity', ['case', validation, 0.3, 0]);
+                    }
+                }
+                document.getElementById('field-display')?.style.setProperty('display', 'block');
             };
 
             // setup the instance, pass callback functions
@@ -333,7 +849,16 @@
                         marker.setLngLat(chapter.location.center);
                     }
                     if (chapter.onChapterEnter.length > 0) {
-                        chapter.onChapterEnter.forEach(setLayerOpacity);
+                        chapter.onChapterEnter.forEach(layerConfig => {
+                            // Check if this is a field change
+                            if (layerConfig.field) {
+                                updateCensusField(layerConfig.field);
+                            }
+                            // Handle opacity changes
+                            if (layerConfig.layer) {
+                                setLayerOpacity(layerConfig);
+                            }
+                        });
                     }
                     if (chapter.callback) {
                         window[chapter.callback]();
