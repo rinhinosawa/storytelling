@@ -22,7 +22,7 @@ var config = {
     footer: 'Source: source citations, etc. <br> Created using <a href="https://github.com/mapbox/storytelling" target="_blank">Mapbox Storytelling</a> template.',
     data: {
         geojson: './assets/census-data-processed.geojson',   // Pre-processed: joined CSV + GeoJSON, filtered to LA metro
-        valueFields: ['ht_ami', 'h_ami', 't_ami', 'compact_ndx', 'frac_sfd', 'emp_gravity', 'emp_ovrll_ndx', 'hh_gravity', 'median_gross_rent'],     // fields available to visualize
+        valueFields: ['ht_ami', 'h_ami', 't_ami', 'compact_ndx', 'frac_sfd', 'emp_gravity', 'emp_ovrll_ndx', 'h_cost', 'hh_gravity', 'median_gross_rent', 'pct_renter_occupied_hu'],     // fields available to visualize
         defaultField: 'ht_ami'              // initial choropleth variable
     },
     chapters: [
@@ -81,9 +81,9 @@ var config = {
             id: 'la-cheap',
             alignment: 'fully',
             hidden: false,
-            title: 'Los Angeles is...cheap?',
+            title: 'Los Angeles is...Cheap?',
             image: './assets/la skyline.jpg',
-            description: 'Los Angeles is widely considered as one of the highest cost of living cities in in the United States. Good weather, cultural ammenities, and economic opportunity all drive extreme demand for housing in the region, making making living here inacessible for many who would like to. <br> <br>Yet, by the H+T Affordability Index, vast amounts of the city are actually considered affordable compared to the rest of the region. Why is this the case?',
+            description: 'Los Angeles is widely considered as one of the highest cost of living cities in in the United States. Good weather, cultural ammenities, and economic opportunity all drive extreme demand for housing in the region, making living here inacessible for many who would like to. <br> <br>Yet, by the H+T Affordability Index, vast amounts of the city are actually considered affordable compared to the rest of the region. Why is this the case?',
             location: {
                 center: [-118, 33.98449],
                 zoom: 9.5,
@@ -108,7 +108,7 @@ var config = {
             hidden: false,
             title: 'What is Affordability?',
             //image: '',
-            description: 'Affordability seems like a simple, quantifiable metric at first glance, but in reality it is a complex combination of a number of different factors that are hard to abtract down to a human scale. <br> <br> The Housing and Transportation (H+T) Affordability Index is a mapping tool that attempts to give a more comprehensive view of affordability than just home prices.  Built on US Census and transit data, the index captures an aggregate of household characteristics within small geographic subunits of cities to give us a best estimate of how their affordabilities differ from each other for a typical person living in the region. The index captures the fundamental trade-off of distance from an urban center, where living further from an urban center often means cheaper housing but longer, more expensive commutes to high-paying jobs.<br> <br>Even then, these factors can vary drastically based on a person\'s lifestyle and personal preferences, making it difficult to measure or classify any one true assessment of how expensive a place is. Why study affordability at all then?',
+            description: 'Affordability seems like a simple, quantifiable metric at first glance, but in reality it is a complex combination of a number of different factors that are hard to abstract down to a human scale. <br> <br> The Housing and Transportation (H+T) Affordability Index is a mapping tool that attempts to give a more comprehensive view of affordability than just home prices.  Built on US Census and transit data, the index captures an aggregate of household characteristics within small geographic subunits of cities to give us a best estimate of how their affordabilities differ from each other for a typical person living in the region. The index captures the fundamental trade-off of distance from an urban center, where living further from an urban center often means cheaper housing but longer, more expensive commutes to high-paying jobs.<br> <br>Even then, these factors can vary drastically based on a person\'s lifestyle and personal preferences, making it difficult to measure or classify any one true assessment of how expensive a place is. Why study affordability at all then?',
             location: {
                 center: [-118, 33.98449],
                 zoom: 9.5,
@@ -365,7 +365,7 @@ var config = {
             hidden: false,
             title: 'Case Study: Santa Monica',
             image: './assets/santamonicawater.png',
-            description: 'Santa Monica, a city on ',
+            description: 'Santa Monica, situated on the Pacific Coast in the Westside of LA, reflects the complexities of the underlying demographic and environmental factors shaping measures of affordability. <br> <br>The city hosts some of the highest home values in the region thanks to its proximity to the beach, a wide range of amenities, and high job concentration in tech and entertainment. Yet by the H+T index, large portions of the city are still considered to be on the affordable end for the region. <br> <br>These contradictory realities coexist because of the ways we choose to measure affordability and ',
             location: {
                 center: [-118.51363, 34.01580],
                 zoom: 13.05,
@@ -381,6 +381,90 @@ var config = {
                 {
                     layer: 'census-choropleth',
                     field: 'ht_ami',
+                    opacity: 1,
+                    duration: 5000
+                }
+            ],
+            onChapterExit: []
+        },
+        {
+            id: 'santa-monica-en',
+            alignment: 'left',
+            hidden: false,
+            title: 'The Pitfalls of Aggregation',
+            image: './assets/santamonicaincome.png',
+            description: 'Aggregate data analysis is a powerful tool for understanding affordability in our cities, but it is not without its flaws. External factors are everpresent in shaping the data we work with, leading to distorted results when context and confounding factors are not properly accounted for. <br> <br>The skewed demographics of Santa Monica, leaning <a href="https://www.justicemap.org/index.php?gsLayer=income&gfLon=-118.24874703&gfLat=34.03014851&giZoom=11&gsGeo=tract&giAdvanced=1&" target="_blank">disproportionately white and wealthy</a>, make its affordability index scores harder to interpret in a broader geographic context. The type of housing that is available is also a major factor.',
+            location: {
+                center: [-118.51363, 34.01580],
+                zoom: 13.05,
+                pitch: 0,
+                bearing: 0.00,
+                speed: 0.5, // make the flying slow
+                curve: 1, // change the speed at which it zooms out
+            },
+            mapAnimation: 'flyTo',
+            rotateAnimation: false,
+            callback: 'switchToDefault',
+            onChapterEnter: [
+                {
+                    layer: 'census-choropleth',
+                    field: 'pct_renter_occupied_hu',
+                    opacity: 1,
+                    duration: 5000
+                }
+            ],
+            onChapterExit: []
+        },
+        {
+            id: 'endogeneity',
+            alignment: 'left',
+            hidden: false,
+            title: 'Self Selection',
+            image: './assets/santamonicawater.png',
+            description: 'Santa Monica reflects a ',
+            location: {
+                center: [-118.51363, 34.01580],
+                zoom: 13.05,
+                pitch: 0,
+                bearing: 0.00,
+                speed: 0.5, // make the flying slow
+                curve: 1, // change the speed at which it zooms out
+            },
+            mapAnimation: 'flyTo',
+            rotateAnimation: false,
+            callback: 'switchToDefault',
+            onChapterEnter: [
+                {
+                    layer: 'census-choropleth',
+                    field: 'ht_ami',
+                    opacity: 1,
+                    duration: 5000
+                }
+            ],
+            onChapterExit: []
+        },
+        {
+            id: 'transportation',
+            alignment: 'left',
+            hidden: false,
+            title: 'Transportation and Density',
+            image: './assets/santamonicatransit.png',
+            description: 'Santa Monica is one of the densest parts of LA, with a strong urban core centered along the waterfront supporting large amounts of commercial and multifamily development. <br> <br>The city is well served by bus and rail service, most prominently by the LA Metro E line which runs from the city center to Downtown LA.',
+            location: {
+                center: [-118.51363, 34.01580],
+                zoom: 13.05,
+                pitch: 0,
+                bearing: 0.00,
+                speed: 0.5, // make the flying slow
+                curve: 1, // change the speed at which it zooms out
+            },
+            mapAnimation: 'flyTo',
+            rotateAnimation: false,
+            callback: 'switchToDefault',
+            onChapterEnter: [
+                {
+                    layer: 'census-choropleth',
+                    field: 'frac_sfd',
                     opacity: 1,
                     duration: 5000
                 }
