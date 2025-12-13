@@ -103,7 +103,7 @@ var config = {
             onChapterExit: []
         },
         {
-            id: 'chapter-3',
+            id: 'affordability',
             alignment: 'fully',
             hidden: false,
             title: 'What is Affordability?',
@@ -167,7 +167,7 @@ var config = {
             onChapterExit: []
         },
         {
-            id: 'methodology',
+            id: 'methodology-intro',
             alignment: 'fully',
             hidden: false,
             title: 'A Patchwork City',
@@ -204,58 +204,70 @@ var config = {
             hidden: false,
             title: 'Case Study: Beverly Hills',
             image: './assets/ce9601b674170faa40e7a093f99be5b2f82703bb.jpg',
-            description: 'Geneva, Switzerland, is a picturesque city nestled along the shores of Lake Geneva, surrounded by the Alps and Jura mountains. Known as a global hub for diplomacy and finance, it is home to numerous international organizations, including the United Nations and the Red Cross.',
+            description: 'Beverly Hills, an independent city located 10 miles west of downtown LA, is a prime example of how affordability is fundamentally intertwined with the built environment and public policy. Apart from its affluent suburban reputation, the city actually contains a significant level of density and commercial development in the area around the Beverly Triangle, located in proximity to Wilshire and Santa Monica Boulevards, two of LA\'s major East-West corridors.',
             location: {
-                center: [-118.41017, 34.06963],
-                zoom: 12.98,
-                pitch: 8.01,
-                bearing: 0.00
+                center: [-118.42017, 34.06963],
+                zoom: 13.2,
+                pitch: 0,
+                bearing: 0.00,
+                speed: 0.5, // make the flying slow
+                curve: 1, // change the speed at which it zooms out
             },
             mapAnimation: 'flyTo',
             rotateAnimation: false,
             callback: 'switchToDefault',
             onChapterEnter: [
                 {
+                    layer: 'census-choropleth',
                     field: 'ht_ami',
+                    opacity: 1,
+                    duration: 5000
                 }
             ],
             onChapterExit: []
         },
         {
-            id: 'chapter-5',
-            alignment: 'left',
+            id: 'bev-hills-dif',
+            alignment: 'right',
             hidden: false,
-            title: 'Beverly Hills - Affordable?',
-            image: './assets/ce9601b674170faa40e7a093f99be5b2f82703bb.jpg',
-            description: 'Beverly Hills, one of the most expensive cities in the.',
+            title: 'The Construction of Difference',
+            image: '',
+            description: 'What creates the difference in affordability between these census block groups located right next to each other, in what should be the densest part of the city? The answer lies in the underlying zoning regulations that dictate what types of development are allowed on each plot of land.',
             location: {
-                center: [-118.41017, 34.06963],
-                zoom: 12.98,
-                pitch: 8.01,
-                bearing: 0.00
+                center: [-118.39017, 34.06963],
+                zoom: 14.5,
+                pitch: 0,
+                bearing: 0.00,
+                speed: 0.5, // make the flying slow
+                curve: 1, // change the speed at which it zooms out
             },
             mapAnimation: 'flyTo',
             rotateAnimation: false,
             callback: 'switchToDefault',
             onChapterEnter: [
                 {
-                    field: 'frac_sfd',
+                    layer: 'census-choropleth',
+                    field: 'ht_ami',
+                    opacity: 1,
+                    duration: 5000
                 }
             ],
             onChapterExit: []
         },
         {
-            id: 'chapter-6',
-            alignment: 'left',
+            id: 'bev-satellite',
+            alignment: 'right',
             hidden: false,
             title: 'A Closer Look',
             image: './assets/bevhillszoning.png',
-            description: 'Beverly Hills is a prime example of how zoning can impacts affordability. <br> <br>The Beverly Triangle (primarily colored red) allows for dense commercial and multifamily housing development with multifamily housing, while the streets directly to the right are zoned for single family homes',
+            description: 'The Beverly Triangle (primarily colored red in the zoning map) and the area to the directly to its northeast are zoned for dense commercial and multifamily development, in line with the relative walkability and transit accessibility of the area. <br> <br>In constrast, the streets directly to the right are zoned for just single family homes, creating a pocket of low-density development that fundamentally limits how many people can access the ammenities of the area.',
             location: {
-                center: [-118.41017, 34.06963],
-                zoom: 12.98,
-                pitch: 8.01,
-                bearing: 0.00
+                center: [-118.39017, 34.06963],
+                zoom: 14.5,
+                pitch: 0,
+                bearing: 0.00,
+                speed: 0.5, // make the flying slow
+                curve: 1, // change the speed at which it zooms out
             },
             mapAnimation: 'flyTo',
             rotateAnimation: false,

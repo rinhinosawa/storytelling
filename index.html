@@ -758,35 +758,43 @@
             };
             
             window.switchToDefault = function() {
-                if (currentStyleState === 'default') return;
+                if (currentStyleState === 'default') {
+                    return Promise.resolve();
+                }
                 
-                map.setStyle(config.style);
-                currentStyleState = 'default';
-                
-                map.once('styledata', () => {
-                    if (config.overlayStyle) {
-                        loadOverlayStyle();
-                    }
+                return new Promise((resolve) => {
+                    map.setStyle(config.style);
+                    currentStyleState = 'default';
                     
-                    setTimeout(() => {
-                        if (!map.getLayer('census-choropleth')) {
-                            const layers = map.getStyle().layers;
-                            const firstSymbol = layers.find(layer => layer.type === 'symbol');
-                            if (firstSymbol) {
-                                loadCensusData(firstSymbol.id);
-                            }
-                        } else {
-                            const colorData = calculateColorBreaks(currentField);
-                            if (colorData) {
-                                const validation = createFieldValidation(currentField, colorData.minValue, colorData.maxValue);
-                                map.setPaintProperty('census-choropleth', 'fill-opacity', ['case', validation, 0.7, 0]);
-                                if (map.getLayer('census-borders')) {
-                                    map.setPaintProperty('census-borders', 'line-opacity', ['case', validation, 0.3, 0]);
-                                }
-                            }
-                            document.getElementById('field-display')?.style.setProperty('display', 'block');
+                    map.once('styledata', () => {
+                        if (config.overlayStyle) {
+                            loadOverlayStyle();
                         }
-                    }, 1500);
+                        
+                        setTimeout(async () => {
+                            if (!map.getLayer('census-choropleth')) {
+                                const layers = map.getStyle().layers;
+                                const firstSymbol = layers.find(layer => layer.type === 'symbol');
+                                if (firstSymbol) {
+                                    await loadCensusData(firstSymbol.id);
+                                } else {
+                                    await loadCensusData(null);
+                                }
+                                resolve();
+                            } else {
+                                const colorData = calculateColorBreaks(currentField);
+                                if (colorData) {
+                                    const validation = createFieldValidation(currentField, colorData.minValue, colorData.maxValue);
+                                    map.setPaintProperty('census-choropleth', 'fill-opacity', ['case', validation, 0.7, 0]);
+                                    if (map.getLayer('census-borders')) {
+                                        map.setPaintProperty('census-borders', 'line-opacity', ['case', validation, 0.3, 0]);
+                                    }
+                                }
+                                document.getElementById('field-display')?.style.setProperty('display', 'block');
+                                resolve();
+                            }
+                        }, 1500);
+                    });
                 });
             };
             
@@ -827,6 +835,16 @@
                     if (config.showMarkers) {
                         marker.setLngLat(chapter.location.center);
                     }
+                    
+                    // Execute callback first and wait for it to complete (important for style switches)
+                    if (chapter.callback) {
+                        const callbackFn = window[chapter.callback];
+                        if (callbackFn && typeof callbackFn === 'function') {
+                            await callbackFn();
+                        }
+                    }
+                    
+                    // Now process onChapterEnter after callback completes (ensures layers exist)
                     if (chapter.onChapterEnter.length > 0) {
                         chapter.onChapterEnter.forEach(layerConfig => {
                             if (layerConfig.field) {
@@ -836,12 +854,6 @@
                                 setLayerOpacity(layerConfig);
                             }
                         });
-                    }
-                    if (chapter.callback) {
-                        const callbackFn = window[chapter.callback];
-                        if (callbackFn && typeof callbackFn === 'function') {
-                            callbackFn();
-                        }
                     }
                     if (chapter.rotateAnimation) {
                         map.once('moveend', () => {
