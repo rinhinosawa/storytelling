@@ -15,7 +15,7 @@
         body {
             margin: 0;
             padding: 0;
-            font-family: sans-serif;
+            font-family: Helvetica, sans-serif;
         }
 
         a,
@@ -54,11 +54,17 @@
             padding: 12px 16px;
             border-radius: 4px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            font-family: sans-serif;
+            font-family: Helvetica, sans-serif;
             font-size: 14px;
             z-index: 1000;
             min-width: 200px;
             max-width: 250px;
+            transition: right 0.3s ease, left 0.3s ease;
+        }
+        
+        #field-display.align-left {
+            right: auto;
+            left: 20px;
         }
         
         #field-display .field-label {
@@ -570,7 +576,8 @@
                 const geojson = await fetch(config.data.geojson).then(r => r.json());
                 censusGeoJSON = geojson;
                 
-                const field = config.data.defaultField;
+                // Use currentField if set, otherwise fall back to defaultField
+                const field = currentField || config.data.defaultField;
                 const colorData = calculateColorBreaks(field);
                 if (!colorData) return;
                 
@@ -750,11 +757,60 @@
             let currentStyleState = 'default'; // 'default' or 'satellite'
             
             // Style toggle functions - accessible via chapter callbacks
-            window.switchToSatellite = function() {
+            window.switchToSatellite = function(chapterConfig = null) {
                 if (!config.satelliteStyle) return;
-                window.hideCensusData();
+                
+                // Check if chapter wants to hide data (opacity 0 in onChapterEnter)
+                let shouldHideData = false;
+                if (chapterConfig && chapterConfig.onChapterEnter) {
+                    shouldHideData = chapterConfig.onChapterEnter.some(layerConfig => 
+                        layerConfig.layer === 'census-choropleth' && layerConfig.opacity === 0
+                    );
+                }
+                
                 map.setStyle(config.satelliteStyle);
                 currentStyleState = 'satellite';
+                
+                // After style loads, restore census layers on top
+                map.once('styledata', () => {
+                    // Wait a moment for style to fully load
+                    setTimeout(() => {
+                        if (!map.getLayer('census-choropleth')) {
+                            // Re-add census layers
+                            const layers = map.getStyle().layers;
+                            const firstSymbol = layers.find(layer => layer.type === 'symbol');
+                            if (firstSymbol) {
+                                loadCensusData(firstSymbol.id).then(() => {
+                                    // Only show data if chapter doesn't want it hidden
+                                    if (!shouldHideData) {
+                                        showCensusData();
+                                    } else {
+                                        // Explicitly hide data if chapter wants it hidden
+                                        window.hideCensusData();
+                                    }
+                                });
+                            } else {
+                                loadCensusData(null).then(() => {
+                                    // Only show data if chapter doesn't want it hidden
+                                    if (!shouldHideData) {
+                                        showCensusData();
+                                    } else {
+                                        // Explicitly hide data if chapter wants it hidden
+                                        window.hideCensusData();
+                                    }
+                                });
+                            }
+                        } else {
+                            // Layers already exist
+                            if (!shouldHideData) {
+                                showCensusData();
+                            } else {
+                                // Explicitly hide data if chapter wants it hidden
+                                window.hideCensusData();
+                            }
+                        }
+                    }, 500);
+                });
             };
             
             window.switchToDefault = function() {
@@ -836,11 +892,26 @@
                         marker.setLngLat(chapter.location.center);
                     }
                     
+                    // Update legend position based on chapter alignment
+                    const fieldDisplay = document.getElementById('field-display');
+                    if (fieldDisplay) {
+                        if (chapter.alignment === 'right') {
+                            fieldDisplay.classList.add('align-left');
+                        } else {
+                            fieldDisplay.classList.remove('align-left');
+                        }
+                    }
+                    
                     // Execute callback first and wait for it to complete (important for style switches)
                     if (chapter.callback) {
                         const callbackFn = window[chapter.callback];
                         if (callbackFn && typeof callbackFn === 'function') {
-                            await callbackFn();
+                            // Pass chapter config to callback so it can check onChapterEnter settings
+                            if (chapter.callback === 'switchToSatellite') {
+                                await callbackFn(chapter);
+                            } else {
+                                await callbackFn();
+                            }
                         }
                     }
                     

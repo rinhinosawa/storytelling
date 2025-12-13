@@ -235,7 +235,7 @@ var config = {
             description: 'What creates the difference in affordability between these census block groups located right next to each other, in what should be the densest part of the city? The answer lies in the underlying zoning regulations that dictate what types of development are allowed on each plot of land.',
             location: {
                 center: [-118.39017, 34.06963],
-                zoom: 14.5,
+                zoom: 14.4,
                 pitch: 0,
                 bearing: 0.00,
                 speed: 0.5, // make the flying slow
@@ -260,10 +260,10 @@ var config = {
             hidden: false,
             title: 'A Closer Look',
             image: './assets/bevhillszoning.png',
-            description: 'The Beverly Triangle (primarily colored red in the zoning map) and the area to the directly to its northeast are zoned for dense commercial and multifamily development, in line with the relative walkability and transit accessibility of the area. <br> <br>In constrast, the streets directly to the right are zoned for just single family homes, creating a pocket of low-density development that fundamentally limits how many people can access the ammenities of the area.',
+            description: 'The Beverly Triangle (primarily colored red in the <a href="https://www.beverlyhills.org/zoningmap" target="_blank">zoning map</a>) and the area to the directly to its northeast are zoned for dense commercial and multifamily development, in line with the relative walkability and transit accessibility of the area. <br> <br>In constrast, the streets directly to the right are zoned for just single family homes, creating a pocket of low-density development that fundamentally limits the supply of housing in that area.',
             location: {
                 center: [-118.39017, 34.06963],
-                zoom: 14.5,
+                zoom: 14.4,
                 pitch: 0,
                 bearing: 0.00,
                 speed: 0.5, // make the flying slow
@@ -272,7 +272,119 @@ var config = {
             mapAnimation: 'flyTo',
             rotateAnimation: false,
             callback: 'switchToSatellite',
-            onChapterEnter: [],
+            onChapterEnter: [
+                {
+                    layer: 'census-choropleth',
+                    field: 'ht_ami',
+                    opacity: 0,
+                }
+            ],
+            onChapterExit: []
+        },
+        {
+            id: 'bev-redlining',
+            alignment: 'right',
+            hidden: false,
+            title: 'How Did We Get Here?',
+            image: './assets/bevhillsredlining.png',
+            description: 'Beverly Hills has always been a city of exclusivity, first developed as an all-white, planned suburban community in the early 1900s. The story hasn\'t changed much even since the <a href="https://dsl.richmond.edu/panorama/redlining/map/CA/LosAngeles/areas#mapview=full&loc=10/34.0053/-118.1566" target="_blank">redlining maps</a> which codified racial segregation were created in the late 1930s: <br> <br>"Both deed restrictions and zoning are of a fairly good protection...This is a very stable and desirable district and might be rated first grade were it not for the fact that it is so highly improved and encompassed by income and business districts." - Quote from Home Owners Loan Corporation\'s (HOLC) appraisal of the selected Beverly Hills neighborhood <br> <br>Almost a century later, the neighborhood character has changed little, still covered with single family homes while the LA region\'s population has quintupled.',
+            location: {
+                center: [-118.39017, 34.06963],
+                zoom: 14.4,
+                pitch: 0,
+                speed: 1, // make the flying slow
+                curve: 0.1, // change the speed at which it zooms out
+            },
+            mapAnimation: 'flyTo',
+            rotateAnimation: false,
+            callback: 'switchToSatellite',
+            onChapterEnter: [
+                {
+                    layer: 'census-choropleth',
+                    field: 'ht_ami',
+                    opacity: 0,
+                }
+            ],
+            onChapterExit: []
+        },
+        {
+            id: 'bev-cycle',
+            alignment: 'right',
+            hidden: false,
+            title: 'Frozen in Time',
+            //image: './assets/bevhillszoning.png',
+            description: 'In many cases, the exclusivity of a low density development becomes a self-sustaining cycle fueled by financial and political incentives. Unaffordability for a prospective resident translates to skyrocketing home values for existing homeowners, who, as a result of the United States\' relatively weak social welfare structures, choose to rely on homeownership as a primary mechanism for wealth accumulation and economic mobility. <br> <br>This reinforces a pattern of stagnancy colloquially known as NIMBYism (Not In My Backyard), describing the tendency for current residents to resist efforts to revedelop housing in their neighborhoods. Political organizing gives NIMBY groups significant power over local government, reinforcing zoning policies such as Beverly Hills\'s which limits the vast majority of new housing construction to already dense, multifamily areas. <br> <br>This is what continues to allow areas such as the one directly right of the Beverly Triangle to continue existing as is: a pocket of car-dependent single family homes in what could be an otherwise dense, walkable neighborhood of LA.',
+            location: {
+                center: [-118.39017, 34.06963],
+                zoom: 14.4,
+                pitch: 0,
+                speed: 1, // make the flying slow
+                curve: 0.1, // change the speed at which it zooms out
+            },
+            mapAnimation: 'flyTo',
+            rotateAnimation: false,
+            callback: 'switchToSatellite',
+            onChapterEnter: [
+                {
+                    layer: 'census-choropleth',
+                    field: 'ht_ami',
+                    opacity: 1,
+                }
+            ],
+            onChapterExit: []
+        },
+        {
+            id: 'beverly-review',
+            alignment: 'right',
+            hidden: false,
+            title: 'Beverly Hills - In Review',
+            //image: './assets/bevhillszoning.png',
+            description: 'This may just be the story behind one small neighborhood, but it is not a unique one. These same patterns of low-density, exclusionary zoning and resistance to growth are repeated over and over across Los Angeles, as well as the rest of the country at large. <br> <br>Affordability is as much an indicator of the political and developmental health of a community as it is a tool to understand where we can and do choose to live. Unexamined, the underlying conditions contributing to unaffordability can make our cities more unequal, driving gentrification, homelessness, and continued spatial segregation.',
+            location: {
+                center: [-118.39017, 34.06963],
+                zoom: 12.5,
+                pitch: 0,
+                speed: 1, // make the flying slow
+                curve: 0.1, // change the speed at which it zooms out
+            },
+            mapAnimation: 'flyTo',
+            rotateAnimation: false,
+            callback: 'switchToDefault',
+            onChapterEnter: [
+                {
+                    layer: 'census-choropleth',
+                    field: 'ht_ami',
+                    opacity: 1,
+                }
+            ],
+            onChapterExit: []
+        },
+        {
+            id: 'santa-monica-intro',
+            alignment: 'left',
+            hidden: false,
+            title: 'Case Study: Santa Monica',
+            image: './assets/santamonicawater.png',
+            description: 'Santa Monica, a city on ',
+            location: {
+                center: [-118.51363, 34.01580],
+                zoom: 13.05,
+                pitch: 0,
+                bearing: 0.00,
+                speed: 0.5, // make the flying slow
+                curve: 1, // change the speed at which it zooms out
+            },
+            mapAnimation: 'flyTo',
+            rotateAnimation: false,
+            callback: 'switchToDefault',
+            onChapterEnter: [
+                {
+                    layer: 'census-choropleth',
+                    field: 'ht_ami',
+                    opacity: 1,
+                    duration: 5000
+                }
+            ],
             onChapterExit: []
         },
     ]
