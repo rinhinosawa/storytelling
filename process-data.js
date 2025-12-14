@@ -1,3 +1,4 @@
+// AI-assisted: Data pre-processing script - Joins CSV and GeoJSON, filters to LA metro area
 const fs = require('fs');
 
 // Configuration

@@ -18,8 +18,8 @@ var config = {
     auto: false,
     title: 'Unpacking "Affordability" in Los Angeles',
     subtitle: 'Building Everyday Intuition for Urban Policy',
-    byline: 'By Rin Hinosawa',
-    footer: 'Source: source citations, etc. <br> Created using <a href="https://github.com/mapbox/storytelling" target="_blank">Mapbox Storytelling</a> template.',
+    byline: 'Rin Hinosawa   |   December 2025',
+    footer: 'Data visualized from the Housing and Transportation (H+T) Affordability Index and the US Census Bureau (census block group geometry)<br> Created using <a href="https://github.com/mapbox/storytelling" target="_blank">Mapbox Storytelling</a> template.',
     data: {
         geojson: './assets/census-data-processed.geojson',   // Pre-processed: joined CSV + GeoJSON, filtered to LA metro
         valueFields: ['ht_ami', 'h_ami', 't_ami', 'compact_ndx', 'frac_sfd', 'emp_gravity', 'emp_ovrll_ndx', 'h_cost', 'hh_gravity', 'median_gross_rent', 'pct_renter_occupied_hu'],     // fields available to visualize
@@ -182,7 +182,7 @@ var config = {
                 // These options control the flight curve, making it move
                 // slowly and zoom out almost completely before starting
                 // to pan.
-                speed: 0.1, // make the flying slow
+                speed: 0.4, // make the flying slow
                 curve: 1, // change the speed at which it zooms out
             },
             mapAnimation: 'flyTo',
@@ -210,7 +210,7 @@ var config = {
                 zoom: 13.2,
                 pitch: 0,
                 bearing: 0.00,
-                speed: 0.5, // make the flying slow
+                speed: 0.4, // make the flying slow
                 curve: 1, // change the speed at which it zooms out
             },
             mapAnimation: 'flyTo',
@@ -238,7 +238,7 @@ var config = {
                 zoom: 14.4,
                 pitch: 0,
                 bearing: 0.00,
-                speed: 0.5, // make the flying slow
+                speed: 0.2, // make the flying slow
                 curve: 1, // change the speed at which it zooms out
             },
             mapAnimation: 'flyTo',
@@ -266,7 +266,7 @@ var config = {
                 zoom: 14.4,
                 pitch: 0,
                 bearing: 0.00,
-                speed: 0.5, // make the flying slow
+                speed: 0.2, // make the flying slow
                 curve: 1, // change the speed at which it zooms out
             },
             mapAnimation: 'flyTo',
@@ -292,7 +292,7 @@ var config = {
                 center: [-118.39017, 34.06963],
                 zoom: 14.4,
                 pitch: 0,
-                speed: 1, // make the flying slow
+                speed: 0.2, // make the flying slow
                 curve: 0.1, // change the speed at which it zooms out
             },
             mapAnimation: 'flyTo',
@@ -337,7 +337,7 @@ var config = {
             id: 'beverly-review',
             alignment: 'right',
             hidden: false,
-            title: 'Beverly Hills - In Review',
+            title: 'Beverly Hills:In Review',
             //image: './assets/bevhillszoning.png',
             description: 'This may just be the story behind one small neighborhood, but it is not a unique one. These same patterns of low-density, exclusionary zoning and resistance to growth are repeated over and over across Los Angeles, as well as the rest of the country at large. <br> <br>Affordability is as much an indicator of the political and developmental health of a community as it is a tool to understand where we can and do choose to live. Unexamined, the underlying conditions contributing to unaffordability can make our cities more unequal, driving gentrification, homelessness, and continued spatial segregation.',
             location: {
@@ -345,7 +345,7 @@ var config = {
                 zoom: 12.5,
                 pitch: 0,
                 speed: 1, // make the flying slow
-                curve: 0.1, // change the speed at which it zooms out
+                curve: 0.2, // change the speed at which it zooms out
             },
             mapAnimation: 'flyTo',
             rotateAnimation: false,
@@ -365,13 +365,13 @@ var config = {
             hidden: false,
             title: 'Case Study: Santa Monica',
             image: './assets/santamonicawater.png',
-            description: 'Santa Monica, situated on the Pacific Coast in the Westside of LA, reflects the complexities of the underlying demographic and environmental factors shaping measures of affordability. <br> <br>The city hosts some of the highest home values in the region thanks to its proximity to the beach, a wide range of amenities, and high job concentration in tech and entertainment. Yet by the H+T index, large portions of the city are still considered to be on the affordable end for the region. <br> <br>These contradictory realities coexist because of the ways we choose to measure affordability and ',
+            description: 'Santa Monica, situated on the Pacific Coast in the Westside of LA, reflects the complexities of the underlying economic and access factors shaping measures of affordability. <br> <br>The city hosts some of the highest home values in the region thanks to its proximity to the beach, a wide range of amenities, and high job concentration in tech and entertainment. Yet by the H+T index, large portions of the city are still considered to be on the affordable end for the region. <br> <br>These contradictory realities coexist because of the ways we choose to measure affordability and ',
             location: {
                 center: [-118.51363, 34.01580],
                 zoom: 13.05,
                 pitch: 0,
                 bearing: 0.00,
-                speed: 0.5, // make the flying slow
+                speed: 0.4, // make the flying slow
                 curve: 1, // change the speed at which it zooms out
             },
             mapAnimation: 'flyTo',
@@ -388,27 +388,27 @@ var config = {
             onChapterExit: []
         },
         {
-            id: 'santa-monica-en',
+            id: 'housing',
             alignment: 'left',
             hidden: false,
-            title: 'The Pitfalls of Aggregation',
-            image: './assets/santamonicaincome.png',
-            description: 'Aggregate data analysis is a powerful tool for understanding affordability in our cities, but it is not without its flaws. External factors are everpresent in shaping the data we work with, leading to distorted results when context and confounding factors are not properly accounted for. <br> <br>The skewed demographics of Santa Monica, leaning <a href="https://www.justicemap.org/index.php?gsLayer=income&gfLon=-118.24874703&gfLat=34.03014851&giZoom=11&gsGeo=tract&giAdvanced=1&" target="_blank">disproportionately white and wealthy</a>, make its affordability index scores harder to interpret in a broader geographic context. The type of housing that is available is also a major factor.',
+            title: 'Housing Characteristics',
+            image: './assets/santamonicahousing.png',
+            description: 'Santa Monica\'s <a href="https://scag.ca.gov/sites/default/files/old/file-attachments/santa-monica-he-0421.pdf?1620767629=" target="_blank">housing stock</a> is primarily multifamily development, distinctly denser than the region as a whole. This range of condos, apartments, and townhomes makes sense for a high-demand community, but the existing supply is still not enough to prevent a shortage of housing. While employment growth continues in desirable job sectors nearby, Santa Monica\'s housing construction has stalled over the past decade, driving up market rates far beyond the region\'s average.<br> </br>Desire for specific types of housing also shapes affordability on an individual level, where many people seek out quieter, detached-style homes which may be scarcer in places like Santa Monica. A person\'s lifestyle and preferences has a significant impact on how affordable a place is to them.',
             location: {
                 center: [-118.51363, 34.01580],
                 zoom: 13.05,
                 pitch: 0,
                 bearing: 0.00,
-                speed: 0.5, // make the flying slow
+                speed: 0.2, // make the flying slow
                 curve: 1, // change the speed at which it zooms out
             },
             mapAnimation: 'flyTo',
             rotateAnimation: false,
-            callback: 'switchToDefault',
+            callback: 'switchToSatellite',
             onChapterEnter: [
                 {
                     layer: 'census-choropleth',
-                    field: 'pct_renter_occupied_hu',
+                    field: 'frac_sfd',
                     opacity: 1,
                     duration: 5000
                 }
@@ -416,23 +416,23 @@ var config = {
             onChapterExit: []
         },
         {
-            id: 'endogeneity',
+            id: 'rent-control',
             alignment: 'left',
             hidden: false,
-            title: 'Self Selection',
-            image: './assets/santamonicawater.png',
-            description: 'Santa Monica reflects a ',
+            title: 'The Gap Between Existing and Prospective Residents',
+            image: './assets/santamonicarentcontrol.png',
+            description: 'An important aspect of Santa Monica\'s affordability under the H+T index comes down to its <a href="https://www.santamonica.gov/media/Document%20Library/Topic%20Explainers/Rent%20Control%20Information%20by%20Subject/SMRCB%202024%20Annual%20Report.pdf" target="_blank">rent control laws</a> , which are some of the strongest in the country. Over 27,000 units are rent controlled across a city of 90,000 people, creating mechanism for existing residents to continue to be able to afford living in the city despite much higher market rates. <br> <br>The areas with the highest proportion of rent controlled properties (A, G, and E) are also considered to be some of the most affordable by the H+T index. While someone in a rent-controlled unit may not be especially housing burdened according to resident surveys, the reality will look very different for someone who wants to move to the area and can only access market rate housing. <br> <br>Santa Monica may become affordable after years of living in the city and benefiting from slow rent growth, but the barrier of entering the market is a critical blind spot towards the affordability shown in the data.',
             location: {
-                center: [-118.51363, 34.01580],
+                center: [-118.50363, 34.02580],
                 zoom: 13.05,
                 pitch: 0,
-                bearing: 0.00,
-                speed: 0.5, // make the flying slow
+                bearing: 45.00,
+                speed: 0.2, // make the flying slow
                 curve: 1, // change the speed at which it zooms out
             },
             mapAnimation: 'flyTo',
             rotateAnimation: false,
-            callback: 'switchToDefault',
+            callback: 'switchToSatellite',
             onChapterEnter: [
                 {
                     layer: 'census-choropleth',
@@ -449,13 +449,69 @@ var config = {
             hidden: false,
             title: 'Transportation and Density',
             image: './assets/santamonicatransit.png',
-            description: 'Santa Monica is one of the densest parts of LA, with a strong urban core centered along the waterfront supporting large amounts of commercial and multifamily development. <br> <br>The city is well served by bus and rail service, most prominently by the LA Metro E line which runs from the city center to Downtown LA.',
+            description: 'Reduced transportation costs are one of the foremost benefits of density, making car-free or car-light life a possibility for many trips and commutes. Walking, biking, and transit are all more affordable transportation options than cars, balancing out the costs of living in a central, high-demand area. <br> <br>Santa Monica is considered a thought leader in bike-friendly infrastructure, and has good transit connectibity to the rest of the region by bus and the Metro E Line, which runs from the city center to Downtown LA. <br> <br>While this variety of options can reduce transportation costs for residents that use them, it can also act as another factor pushing up demand for housing here. Walkable communities are scarce in car-reliant LA, pepetuating displacement risks and inequitable access to multimodal transportation options.',
+            location: {
+                center: [-118.498, 34.01580],
+                zoom: 15,
+                pitch: 0,
+                bearing: 45.00,
+                speed: 0.2, // make the flying slow
+                curve: 1, // change the speed at which it zooms out
+            },
+            mapAnimation: 'flyTo',
+            rotateAnimation: false,
+            callback: 'switchToSatellite',
+            onChapterEnter: [
+                {
+                    layer: 'census-choropleth',
+                    field: 'ht_ami',
+                    opacity: 0,
+                    duration: 5000
+                }
+            ],
+            onChapterExit: []
+        },
+        {
+            id: 'santa-monica-en',
+            alignment: 'left',
+            hidden: false,
+            title: 'Access to Affordability',
+            image: './assets/santamonicaincome.png',
+            description: 'Santa Monica reveals how access to affordability is just as important as affordability itself, calling into question how the policies we create for our cities funciton in reality. The skewed population of Santa Monica, leaning <a href="https://www.justicemap.org/index.php?gsLayer=income&gfLon=-118.24874703&gfLat=34.03014851&giZoom=11&gsGeo=tract&giAdvanced=1&" target="_blank">disproportionately white and wealthy</a>, reflect the current barriers that may prevent people from accessing the affordability provided by policies like rent control. <br> <br>The city\'s history of redlining and exclusionary housing policy continue to shape its current landscape, where upfront financial barriers inhibit the diversification of the city and preserve demographic characteristics established decades ago.',
+            location: {
+                center: [-118.498, 34.01580],
+                zoom: 15,
+                pitch: 0,
+                bearing: 45.00,
+                speed: 0.2, // make the flying slow
+                curve: 1, // change the speed at which it zooms out
+            },
+            mapAnimation: 'flyTo',
+            rotateAnimation: false,
+            callback: 'switchToSatellite',
+            onChapterEnter: [
+                {
+                    layer: 'census-choropleth',
+                    field: 'ht_ami',
+                    opacity: 0,
+                    duration: 5000
+                }
+            ],
+            onChapterExit: []
+        },
+        {
+            id: 'santa-monica-review',
+            alignment: 'left',
+            hidden: false,
+            title: 'Santa Monica: In Review',
+            image: '',
+            description: 'Santa Monica is a complex picture of affordability - an aggregate of who chooses to live there, and why. Between desire for specific housing stock, behaviors related to transportation, and access to policies like rent control, the city shows the pitfalls of taking aggregate data at face value. <br> <br>One single metric can never truly capture the complexities of our lived reality. Looking at local context and policy is critical to truly understand how different people from all walks of life experience our cities.',
             location: {
                 center: [-118.51363, 34.01580],
                 zoom: 13.05,
                 pitch: 0,
                 bearing: 0.00,
-                speed: 0.5, // make the flying slow
+                speed: 0.4, // make the flying slow
                 curve: 1, // change the speed at which it zooms out
             },
             mapAnimation: 'flyTo',
@@ -464,7 +520,71 @@ var config = {
             onChapterEnter: [
                 {
                     layer: 'census-choropleth',
-                    field: 'frac_sfd',
+                    field: 'ht_ami',
+                    opacity: 1,
+                    duration: 5000
+                }
+            ],
+            onChapterExit: []
+        },
+        {
+            id: 'case-review',
+            alignment: 'fully',
+            hidden: false,
+            title: 'Takeaways',
+            image: '',
+            description: 'These two case studies reveal how different dimensions of affordability are fundamentally intertwined with the built environment of our cities. The political, historical, and economic factors shaping of our cities are in constant dialogue with the metrics we use to evaluate them. <br> <br>Affordability is just a snapshot in time of one dimension of our cities, but that doesn\'t make it any less powerful of a tool to understand the health and accessibility of our communities. <br> <br>The H+T Index is just one of hundreds of data-based tools our city planners and policians will use to make decisions about our cities. The best thing we can do is work towards understanding and thinking critically about the data we have, and the stories that can be told with it.',
+            location: {
+                center: [-118, 33.98449],
+                zoom: 9.5,
+                pitch: 0,
+                bearing: 0,
+                // flyTo additional controls-
+                // These options control the flight curve, making it move
+                // slowly and zoom out almost completely before starting
+                // to pan.
+                speed: 0.4, // make the flying slow
+                curve: 1, // change the speed at which it zooms out
+            },
+            mapAnimation: 'flyTo',
+            rotateAnimation: false,
+            callback: 'switchToDefault',
+            onChapterEnter: [
+                {
+                    layer: 'census-choropleth',
+                    field: 'ht_ami',
+                    opacity: 1,
+                    duration: 5000
+                }
+            ],
+            onChapterExit: []
+        },
+        {
+            id: 'explore',
+            alignment: 'fully',
+            hidden: false,
+            title: 'Explore',
+            image: '',
+            description: 'Curious about how your community compares to the rest of the United States? Map the H+T Index <a href="https://htaindex.cnt.org/map/" target="_blank">here</a> to explore how it scores your community, or learn more about the methodology and tools used to construct the index.',
+            location: {
+                center: [-118, 33.98449],
+                zoom: 9.5,
+                pitch: 0,
+                bearing: 0,
+                // flyTo additional controls-
+                // These options control the flight curve, making it move
+                // slowly and zoom out almost completely before starting
+                // to pan.
+                speed: 0.4, // make the flying slow
+                curve: 1, // change the speed at which it zooms out
+            },
+            mapAnimation: 'flyTo',
+            rotateAnimation: false,
+            callback: 'switchToDefault',
+            onChapterEnter: [
+                {
+                    layer: 'census-choropleth',
+                    field: 'ht_ami',
                     opacity: 1,
                     duration: 5000
                 }

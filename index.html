@@ -21,7 +21,7 @@
         a,
         a:hover,
         a:visited {
-            color: #0071bc;
+            color: #65a8d5;
         }
 
         #map {
@@ -46,6 +46,7 @@
             text-align: center;
         }
 
+        /* AI-assisted: Field display widget CSS - Legend widget styling for census data visualization */
         #field-display {
             position: fixed;
             bottom: 20px;
@@ -62,6 +63,7 @@
             transition: right 0.3s ease, left 0.3s ease;
         }
         
+        /* AI-assisted: Alignment-based positioning for legend widget */
         #field-display.align-left {
             right: auto;
             left: 20px;
@@ -420,12 +422,13 @@
             return data;
         }
 
+        // AI-assisted: Census data visualization system - Global variables and helper functions
         // Store the loaded GeoJSON data globally so we can update fields
         let censusGeoJSON = null;
         let currentField = config.data.defaultField;
         let currentBreaks = null;
         
-        // Helper: Create field validation expression
+        // AI-assisted: Helper function to create Mapbox expression for field validation
         function createFieldValidation(fieldName, minVal, maxVal) {
             return [
                 'all',
@@ -437,12 +440,12 @@
             ];
         }
         
-        // Helper: Normalize GEOID to consistent format
+        // AI-assisted: Helper function to normalize GEOID format for data matching
         function normalizeGeoid(id) {
             return String(id || '').trim().replace(/^"+|"+$/g, '').padStart(12, '0');
         }
         
-        // Helper: Calculate color breaks and stops
+        // AI-assisted: Calculate quantile-based color breaks for choropleth visualization
         function calculateColorBreaks(fieldName) {
             if (!censusGeoJSON) return null;
             
@@ -464,7 +467,7 @@
             return { breaks, stops, minValue: breaks[0], maxValue: breaks[breaks.length - 1] };
         }
         
-        // Data dictionary mapping field codes to full labels
+        // AI-assisted: Data dictionary mapping field codes to human-readable labels
         const fieldLabels = {
             'ht_ami': 'Housing + Transportation Costs as a Percent of Income for a Typical Household',
             'h_ami': 'Housing Costs as a Percent of Income for a Typical Household',
@@ -477,7 +480,7 @@
             'median_gross_rent': 'Median Gross Monthly Rent'
         };
         
-        // Update the field display widget with legend
+        // AI-assisted: Update the field display widget with legend and value ranges
         function updateFieldDisplay(fieldName, breaks = null) {
             const displayEl = document.getElementById('field-display');
             if (!displayEl) return;
@@ -542,7 +545,7 @@
             `;
         }
         
-        // Update the visualized field dynamically with smooth transition
+        // AI-assisted: Update the visualized field dynamically with smooth color transitions
         function updateCensusField(fieldName) {
             if (!censusGeoJSON || !map.getLayer('census-choropleth')) return;
             
@@ -568,7 +571,7 @@
             }
         }
         
-        // Load and visualize census data (hidden initially)
+        // AI-assisted: Load and visualize census data with layer positioning below basemap labels
         async function loadCensusData(beforeId = null) {
             if (map.getLayer('census-choropleth') && map.getSource('census-data')) return;
             
@@ -641,6 +644,7 @@
         
         // Load overlay style and add its layers on top
         let overlayLoading = false;
+        // AI-assisted: Load overlay Mapbox style and add layers on top of census data
         async function loadOverlayStyle() {
             if (overlayLoading) return;
             overlayLoading = true;
@@ -717,7 +721,7 @@
                 });
             }
 
-            // Load all data and layers first, then show everything together
+            // AI-assisted: Load all data and layers first, then show everything together
             if (config.data && config.data.geojson) {
                 const loadAllData = async () => {
                     // Wait for symbol layers to be available (retry up to 10 times)
@@ -756,7 +760,7 @@
             // Track current style state for bidirectional navigation
             let currentStyleState = 'default'; // 'default' or 'satellite'
             
-            // Style toggle functions - accessible via chapter callbacks
+            // AI-assisted: Style toggle functions - Switch between default and satellite basemap styles
             window.switchToSatellite = function(chapterConfig = null) {
                 if (!config.satelliteStyle) return;
                 
@@ -813,6 +817,7 @@
                 });
             };
             
+            // AI-assisted: Switch back to default style and restore census data layers
             window.switchToDefault = function() {
                 if (currentStyleState === 'default') {
                     return Promise.resolve();
@@ -854,6 +859,7 @@
                 });
             };
             
+            // AI-assisted: Helper functions to show/hide census data layers
             window.hideCensusData = function() {
                 if (map.getLayer('census-choropleth')) map.setPaintProperty('census-choropleth', 'fill-opacity', 0);
                 if (map.getLayer('census-borders')) map.setPaintProperty('census-borders', 'line-opacity', 0);
@@ -892,7 +898,7 @@
                         marker.setLngLat(chapter.location.center);
                     }
                     
-                    // Update legend position based on chapter alignment
+                    // AI-assisted: Update legend position based on chapter alignment to avoid text overlap
                     const fieldDisplay = document.getElementById('field-display');
                     if (fieldDisplay) {
                         if (chapter.alignment === 'right') {
@@ -902,7 +908,7 @@
                         }
                     }
                     
-                    // Execute callback first and wait for it to complete (important for style switches)
+                    // AI-assisted: Execute callback first and wait for it to complete (important for style switches)
                     if (chapter.callback) {
                         const callbackFn = window[chapter.callback];
                         if (callbackFn && typeof callbackFn === 'function') {
@@ -915,7 +921,7 @@
                         }
                     }
                     
-                    // Now process onChapterEnter after callback completes (ensures layers exist)
+                    // AI-assisted: Process onChapterEnter after callback completes (ensures layers exist)
                     if (chapter.onChapterEnter.length > 0) {
                         chapter.onChapterEnter.forEach(layerConfig => {
                             if (layerConfig.field) {
